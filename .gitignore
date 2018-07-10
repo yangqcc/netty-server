@@ -1,1 +1,17 @@
 /target/
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/inspectionProfiles/
+.idea/kotlinc.xml
+.idea/libraries/
+.idea/misc.xml
+.idea/modules.xml
+.idea/workspace.xml
+client/client.iml
+netty-server.iml
+nio-data.txt
+nio/nio.iml
+nio/pom.xml
+nio/src/test/
+nio/target/
+server/server.iml
