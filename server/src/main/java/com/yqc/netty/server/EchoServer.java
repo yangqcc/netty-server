@@ -1,4 +1,4 @@
-package com.yqc.server;
+package com.yqc.netty.server;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -9,6 +9,9 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 import java.net.InetSocketAddress;
 
+/**
+ * @author yangqc
+ */
 public class EchoServer {
     private final int port;
 
@@ -21,17 +24,21 @@ public class EchoServer {
         NioEventLoopGroup group = new NioEventLoopGroup();
         try {
             ServerBootstrap b = new ServerBootstrap();
-            b.group(group) //创建 ServerBootstrap
-                    .channel(NioServerSocketChannel.class)        //指定使用 NIO 的传输 Channel
-                    .localAddress(new InetSocketAddress(port))    //设置 socket 地址使用所选的端口
-                    .childHandler(new ChannelInitializer<SocketChannel>() { //添加 EchoServerHandler 到 Channel 的 ChannelPipeline
-                        @Override
-                        public void initChannel(SocketChannel ch) throws Exception {
-                            ch.pipeline().addLast(new EchoServerHandler());
-                        }
-                    });
-
-            ChannelFuture f = b.bind().sync();//绑定的服务器;sync 等待服务器关闭
+            //创建 ServerBootstrap
+            b.group(group);
+            b.channel(NioServerSocketChannel.class);
+            b.localAddress(new InetSocketAddress(port));
+            //添加 EchoServerHandler 到 Channel 的 ChannelPipeline
+            b.childHandler(new ChannelInitializer<SocketChannel>() {
+                @Override
+                public void initChannel(SocketChannel ch) {
+                    ch.pipeline().addLast(new EchoServerHandler());
+                }
+            });
+            //指定使用 NIO 的传输 Channel
+            //设置 socket 地址使用所选的端口
+            //绑定的服务器;sync 等待服务器关闭
+            ChannelFuture f = b.bind().sync();
             System.out.println(EchoServer.class.getName() + " started and listen on " + f.channel().localAddress());
             f.channel().closeFuture().sync();//关闭 channel 和 块，直到它被关闭
         } finally {

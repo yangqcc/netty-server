@@ -1,4 +1,4 @@
-package com.yqc.client;
+package com.yqc.netty.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -33,18 +33,24 @@ public class EchoClient {
     public void start() throws Exception {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
-            Bootstrap b = new Bootstrap();                //1.创建 Bootstrap
-            b.group(group)                                //2.指定 EventLoopGroup 来处理客户端事件。由于我们使用 NIO 传输，所以用到了 NioEventLoopGroup 的实现
-                    .channel(NioSocketChannel.class)      //3.使用的 channel 类型是一个用于 NIO 传输
-                    .remoteAddress(new InetSocketAddress(host, port))    //4.设置服务器的 InetSocketAddress
-                    .handler(new ChannelInitializer<SocketChannel>() {   //5.当建立一个连接和一个新的通道时，创建添加到 EchoClientHandler 实例 到 channel pipeline
+            //1.创建 Bootstrap
+            Bootstrap b = new Bootstrap();
+            //2.指定 EventLoopGroup 来处理客户端事件。由于我们使用 NIO 传输，所以用到了 NioEventLoopGroup 的实现
+            b.group(group)
+                    //3.使用的 channel 类型是一个用于 NIO 传输
+                    .channel(NioSocketChannel.class)
+                    //4.设置服务器的 InetSocketAddress
+                    .remoteAddress(new InetSocketAddress(host, port))
+                    //5.当建立一个连接和一个新的通道时，创建添加到 EchoClientHandler 实例 到 channel pipeline
+                    .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
-                        public void initChannel(SocketChannel ch) throws Exception {
+                        public void initChannel(SocketChannel ch) {
                             ch.pipeline().addLast(new EchoClientHandler());
                         }
                     });
 
-            ChannelFuture f = b.connect().sync();        //6.连接到远程;等待连接完成
+            //6.连接到远程;等待连接完成
+            ChannelFuture f = b.connect().sync();
             f.channel().closeFuture().sync();            //7.阻塞直到 Channel 关闭
         } finally {
             group.shutdownGracefully().sync();           //8.调用 shutdownGracefully() 来关闭线程池和释放所有资源

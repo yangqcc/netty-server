@@ -1,1 +1,32 @@
+*.class
+.*
+.settings/
+*/.settings/
+.idea/
+*/.idea
+
+.project
+.classpath
+catalina.base_IS_UNDEFINED/
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+#Grunt modules
+aota-admin/src/main/webapp/node_modules
+
 /target/
+*/target/
+*.iml
+*.iml
+*/*iml
+.idea/
+*/target/
