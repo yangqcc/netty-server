@@ -1,4 +1,4 @@
-package com.yqc.client;
+package com.yqc.netty.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;

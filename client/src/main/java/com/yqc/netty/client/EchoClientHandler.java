@@ -1,4 +1,4 @@
-package com.yqc.client;
+package com.yqc.netty.client;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
