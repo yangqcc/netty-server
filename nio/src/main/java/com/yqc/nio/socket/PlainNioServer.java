@@ -1,4 +1,4 @@
-package com.yqc.netty;
+package com.yqc.nio.socket;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -84,5 +84,9 @@ public class PlainNioServer {
         }
       }
     }
+  }
+
+  public static void main(String[] args) throws IOException {
+    new PlainOioServer().serve(8080);
   }
 }

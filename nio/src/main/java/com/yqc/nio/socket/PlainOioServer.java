@@ -1,4 +1,4 @@
-package com.yqc.netty;
+package com.yqc.nio.socket;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -8,7 +8,7 @@ import java.nio.charset.Charset;
 
 /**
  * <p>title:</p>
- * <p>description:</p>
+ * <p>description:未使用netty的网络阻塞编程</p>
  *
  * @author yangqc
  * @date Created in 2018-06-03
@@ -38,11 +38,12 @@ public class PlainOioServer {
         new Thread(() -> {
           OutputStream out;
           try {
+            Thread.sleep(2000);
             out = clientSocket.getOutputStream();
             out.write("Hi!\r\n".getBytes(Charset.forName("UTF-8")));
             out.flush();
             clientSocket.close();
-          } catch (IOException e) {
+          } catch (IOException | InterruptedException e) {
             e.printStackTrace();
             try {
               clientSocket.close();
@@ -55,5 +56,9 @@ public class PlainOioServer {
     } catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  public static void main(String[] args) throws IOException {
+    new PlainOioServer().serve(8080);
   }
 }
