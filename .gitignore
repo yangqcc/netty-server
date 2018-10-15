@@ -26,11 +26,11 @@ aota-admin/src/main/webapp/node_modules
 /target/
 client/client.iml
 netty-server.iml
-nio-data.txt
 nio/nio.iml
-nio/pom.xml
 nio/src/test/
 nio/target/
 server/server.iml
 client/target/
 server/target/
+nio.iml
+git
