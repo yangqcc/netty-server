@@ -4,8 +4,6 @@ client/client.iml
 netty-server.iml
 nio-data.txt
 nio/nio.iml
-nio/pom.xml
-nio/src/test/
 nio/target/
 server/server.iml
 client/target/
