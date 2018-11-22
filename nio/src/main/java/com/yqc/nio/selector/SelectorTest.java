@@ -42,7 +42,6 @@ public class SelectorTest {
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNext()) {
             String msg = scanner.nextLine();
-
             buf.put((new Date() + "：" + msg).getBytes());
             buf.flip();
             //4. 向通道写数据
