@@ -1,4 +1,4 @@
-package com.yqc.nio.socket;
+package com.yqc.nio.socket.tcp;
 
 import java.io.*;
 import java.net.ServerSocket;

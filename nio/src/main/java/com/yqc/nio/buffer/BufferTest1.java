@@ -7,7 +7,7 @@ import java.nio.channels.FileChannel;
 
 /**
  * <p>title:</p>
- * <p>description:</p>
+ * <p>description:nio原生buffer</p>
  *
  * @author yangqc
  * @date Created in 2018-07-08

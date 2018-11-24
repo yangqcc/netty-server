@@ -1,4 +1,4 @@
-package com.yqc.nio.socket.serverandclient;
+package com.yqc.nio.socket.blockserver;
 
 import java.io.IOException;
 import java.io.InputStream;

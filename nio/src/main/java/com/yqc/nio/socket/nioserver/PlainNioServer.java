@@ -1,4 +1,4 @@
-package com.yqc.nio.socket;
+package com.yqc.nio.socket.nioserver;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
