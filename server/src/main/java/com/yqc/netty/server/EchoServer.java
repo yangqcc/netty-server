@@ -1,6 +1,7 @@
 package com.yqc.netty.server;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
@@ -51,6 +52,8 @@ public class EchoServer {
           });
       //异步绑定服务器,调用sync方法直到绑定完成
       ChannelFuture f = b.bind().sync();
+      Channel channel = f.channel();
+      channel.writeAndFlush("this is server!");
       //获取Channel的CloseFuture,并且阻塞当前线程直到完成
       f.channel().closeFuture().sync();
     } catch (Exception e) {

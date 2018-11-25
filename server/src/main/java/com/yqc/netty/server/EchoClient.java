@@ -1,6 +1,7 @@
 package com.yqc.netty.server;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
@@ -47,6 +48,8 @@ public class EchoClient {
                         }
                     });
             ChannelFuture f = bootstrap.connect().sync();
+            Channel channel = f.channel();
+            channel.writeAndFlush("hello");
             f.channel().closeFuture().sync();
         } finally {
             //关闭线程并且释放所有资源

@@ -28,6 +28,8 @@ public class EchoClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
         super.channelActive(ctx);
     }
 
+
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
         //记录已接收的消息转储

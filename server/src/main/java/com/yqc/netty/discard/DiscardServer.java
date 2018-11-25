@@ -29,7 +29,7 @@ public class DiscardServer {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
-            //(2)ServerBootstrap 是一个启动 NIO 服务的辅助启动类。
+            //(2)CustomServerBootstrap 是一个启动 NIO 服务的辅助启动类。
             // 你可以在这个服务中直接使用 Channel，但是这会是一个复杂的处理过程，在很多情况下你并不需要这样做。
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)
