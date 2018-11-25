@@ -17,7 +17,7 @@ public class HelloServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg.toString().startsWith(ClientBootstrap.providerName)) {
-            String result = new HelloServiceImpl().hello(msg.toString()).substring(msg.toString().lastIndexOf("#"));
+            String result = new HelloServiceImpl().hello(msg.toString());
             ctx.writeAndFlush(result);
         }
     }
