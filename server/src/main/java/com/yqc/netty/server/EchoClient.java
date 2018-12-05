@@ -22,7 +22,7 @@ import java.net.InetSocketAddress;
 public class EchoClient {
 
     public static void main(String[] args) throws InterruptedException {
-        new EchoClient("localhost", 8080).start();
+        new EchoClient("localhost", 8081).start();
     }
 
     private final String host;

@@ -9,6 +9,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.SelectorProvider;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Scanner;
@@ -94,6 +95,65 @@ public class SelectorTest {
         }
     }
 
+    @Test
+    public void testSelect() throws IOException {
+        ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+        serverSocketChannel.bind(new InetSocketAddress(8080));
+        serverSocketChannel.configureBlocking(false);
+
+        Selector selector = Selector.open();
+        serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+        while (selector.select() > 0) {
+            Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+            while (iterator.hasNext()) {
+                SelectionKey selectionKey = iterator.next();
+                // a connection was accepted by a ServerSocketChannel
+                if (selectionKey.isAcceptable()) {
+                    SocketChannel socketChannel = serverSocketChannel.accept();
+                    if (socketChannel != null) {
+                        socketChannel.configureBlocking(false);
+                        socketChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                    }
+                }
+                // a channel is ready for reading
+                if (selectionKey.isReadable()) {
+                    SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
+                    ByteBuffer buffer = ByteBuffer.allocate(1024);
+                    int len;
+                    while ((len = socketChannel.read(buffer)) > 0) {
+                        buffer.flip();
+                        byte[] bytes = new byte[1024];
+                        buffer.get(bytes, 0, len);
+                        System.out.println(new String(bytes, 0, len));
+                    }
+                }
+                // a channel is ready for writing
+                //检查 socket 是否准备好写数据。
+                if (selectionKey.isWritable()) {
+                    SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
+                    ByteBuffer buffer = ByteBuffer.allocate(1024);
+                    buffer.put("hello".getBytes());
+                    buffer.flip();
+                    while (buffer.hasRemaining()) {
+                        //将数据写入到所连接的客户端。如果网络饱和，连接是可写的，那么这个循环将写入数据，直到该缓冲区是空的。
+                        if (socketChannel.write(buffer) == 0) {
+                            break;
+                        }
+                    }
+                    //   socketChannel.register(selector, SelectionKey.OP_CONNECT);
+                    socketChannel.finishConnect();
+                    socketChannel.close();
+                }
+                // a connection was eatablished with a remote server
+                if (selectionKey.isValid() && selectionKey.isConnectable()) {
+                   /* SocketChannel client = (SocketChannel) selectionKey.channel();
+                    client.close();*/
+                }
+            }
+            iterator.remove();
+        }
+    }
+
     private void readMsg(SocketChannel channel) throws IOException {
         ByteBuffer buf = ByteBuffer.allocate(1024);
         int len;
@@ -103,5 +163,11 @@ public class SelectorTest {
             buf.get(bytes, 0, len);
             System.out.println(new String(bytes, 0, len));
         }
+    }
+
+    @Test
+    public void selectProvider() throws IOException {
+        Selector selector = Selector.open();
+        SelectorProvider defaultSelectorProvider = SelectorProvider.provider();
     }
 }
