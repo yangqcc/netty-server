@@ -18,17 +18,16 @@ public class NioWriteHandler implements Runnable {
     @Override
     public void run() {
         try {
-            synchronized (selectionKey) {
-                if (selectionKey.isValid()) {
-                    SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
-                    byte[] bytes = "Hello,Client!".getBytes();
-                    ByteBuffer buffer = ByteBuffer.allocate(1024);
-                    buffer.put(bytes);
-                    buffer.flip();
-                    socketChannel.write(buffer);
-                    socketChannel.close();
-                    System.out.println("this thread name is :" + Thread.currentThread().getName() + "!");
-                }
+            if (selectionKey.isValid()) {
+                SocketChannel socketChannel = (SocketChannel) selectionKey.channel();
+                byte[] bytes = "Hello,Client!".getBytes();
+                ByteBuffer buffer = ByteBuffer.allocate(1024);
+                buffer.put(bytes);
+                buffer.flip();
+                socketChannel.write(buffer);
+                selectionKey.interestOps(selectionKey.interestOps() & ~SelectionKey.OP_WRITE);
+                socketChannel.close();
+                System.out.println("write handler,this thread name is :" + Thread.currentThread().getName() + "!");
             }
         } catch (Exception e) {
             e.printStackTrace();

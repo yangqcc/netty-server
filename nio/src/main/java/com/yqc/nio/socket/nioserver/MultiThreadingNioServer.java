@@ -59,15 +59,18 @@ public class MultiThreadingNioServer {
                         SocketChannel socketChannel = serverSocketChannel1.accept();
                         if (socketChannel != null) {
                             socketChannel.configureBlocking(false);
-                            socketChannel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ);
+                            socketChannel.register(selector, SelectionKey.OP_WRITE | SelectionKey.OP_READ | SelectionKey.OP_CONNECT);
                         }
                     }
                     if (selectionKey.isValid() && selectionKey.isReadable()) {
                         executorService.execute(new NioReadHandler(selectionKey));
                     }
-                    if (selectionKey.isValid() && selectionKey.isWritable()) {
+                  /*  if (selectionKey.isValid() && selectionKey.isWritable()) {
                         executorService.execute(new NioWriteHandler(selectionKey));
-                    }
+                    }*/
+                 /*   if (selectionKey.isValid() && selectionKey.isConnectable()) {
+                        executorService.execute(new NioConnectHandler(selectionKey));
+                    }*/
                 }
                 iterator.remove();
             }

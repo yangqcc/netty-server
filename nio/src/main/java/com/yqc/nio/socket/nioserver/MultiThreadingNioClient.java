@@ -22,7 +22,7 @@ public class MultiThreadingNioClient {
         Selector selector = Selector.open();
         int i = 0;
         //注册10个通道
-        while (i < 10) {
+        while (i < 20) {
             SocketChannel channel = SocketChannel.open();
             channel.configureBlocking(false);
             //请求连接
@@ -37,12 +37,11 @@ public class MultiThreadingNioClient {
                 while (ite.hasNext()) {
                     SelectionKey key = (SelectionKey) ite.next();
                     SocketChannel socketChannel = (SocketChannel) key.channel();
-                    ite.remove();
                     if (key.isConnectable()) {
                         if (socketChannel.isConnectionPending()) {
                             if (socketChannel.finishConnect()) {
                                 //只有当连接成功后才能注册OP_READ事件
-                                key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+                                key.interestOps(SelectionKey.OP_WRITE);
                             } else {
                                 key.cancel();
                             }
@@ -58,7 +57,8 @@ public class MultiThreadingNioClient {
                             byteBuffer.flip();
                             System.out.println(new String(bytes, StandardCharsets.UTF_8));
                         }
-                        socketChannel.close();
+                        // socketChannel.close();
+                        key.interestOps(SelectionKey.OP_WRITE);
                     } else if (key.isWritable()) {
                         socketChannel = (SocketChannel) key.channel();
                         byte[] bytes = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()).getBytes();
@@ -66,8 +66,10 @@ public class MultiThreadingNioClient {
                         buffer.put(bytes);
                         buffer.flip();
                         socketChannel.write(buffer);
+                        key.interestOps(SelectionKey.OP_READ);
                     }
                 }
+                ite.remove();
             } catch (IOException e) {
                 e.printStackTrace();
             }
