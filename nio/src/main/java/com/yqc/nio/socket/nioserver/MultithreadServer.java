@@ -70,7 +70,7 @@ class HandleStream implements Runnable {
             socket.shutdownInput();
             System.out.println("读取完毕");
             OutputStream outputStream = socket.getOutputStream();
-            outputStream.write("this is multilethread server!".getBytes());
+            outputStream.write("this is multithread server!".getBytes());
             outputStream.flush();
             socket.close();
         } catch (Exception e) {
