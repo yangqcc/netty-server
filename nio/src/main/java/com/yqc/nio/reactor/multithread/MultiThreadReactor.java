@@ -115,6 +115,7 @@ public class MultiThreadReactor implements Runnable {
                     readBuffer.flip();
                 }
             }
+            System.out.println(new String(readBuffer.array(), 0, readBuffer.limit(), StandardCharsets.UTF_8));
             state = PROCESS;
             executorService.execute(new Processor());
         }
@@ -127,7 +128,6 @@ public class MultiThreadReactor implements Runnable {
                 httpURLConnection.setDoOutput(true);
                 httpURLConnection.setDoInput(true);
                 httpURLConnection.setRequestMethod("GET");
-                // httpURLConnection.setRequestProperty();
                 /**
                  * 接收数据
                  */
@@ -135,7 +135,7 @@ public class MultiThreadReactor implements Runnable {
                 byte[] b = new byte[1024];
                 int len;
                 writeBuffer.clear();
-                byte[] bytes = ("HTTP/1.1 200 OK\r\n\r\n ").getBytes();
+                byte[] bytes = ("HTTP/1.1 200 OK \r\n Transfer-Encoding: chunked\r\n\r\n ").getBytes();
                 writeBuffer.put(bytes);
                 while ((len = inputStream.read(b)) != -1) {
                     if (writeBuffer.remaining() < len) {
@@ -144,7 +144,7 @@ public class MultiThreadReactor implements Runnable {
                         newBuffer.put(writeBuffer);
                         writeBuffer = newBuffer;
                     }
-                    System.out.println("输入:" + new String(b, 0, len, StandardCharsets.UTF_8));
+                    System.out.println("获取信息:" + new String(b, 0, len, StandardCharsets.UTF_8));
                     writeBuffer.put(b, 0, len);
                 }
                 writeBuffer.flip();
