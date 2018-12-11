@@ -19,7 +19,7 @@ public class SubReactor implements Runnable {
     public void run() {
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                selector.select();
+                selector.select(1);
                 Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
                 while (iterator.hasNext()) {
                     SelectionKey key = iterator.next();

@@ -19,12 +19,10 @@ import java.util.concurrent.Executors;
 public class MainSubReactor implements Runnable {
 
     public static void main(String[] args) {
-        new MainSubReactor(8888);
+        new MainSubReactor(8080).run();
     }
 
     private final Selector mainSelector;
-
-    private final ServerSocketChannel serverSocketChannel;
 
     private final Selector[] subSelector = new Selector[6];
 
@@ -35,11 +33,11 @@ public class MainSubReactor implements Runnable {
     MainSubReactor(int port) {
         try {
             SelectorProvider selectorProvider = SelectorProvider.provider();
-            serverSocketChannel = selectorProvider.openServerSocketChannel();
+            ServerSocketChannel serverSocketChannel = selectorProvider.openServerSocketChannel();
             serverSocketChannel.bind(new InetSocketAddress(port));
             serverSocketChannel.configureBlocking(false);
             mainSelector = selectorProvider.openSelector();
-            serverSocketChannel.register(mainSelector, SelectionKey.OP_ACCEPT, new Acceptor());
+            serverSocketChannel.register(mainSelector, SelectionKey.OP_ACCEPT, new Acceptor(serverSocketChannel, mainSelector));
             for (int i = 0; i < subSelector.length; i++) {
                 subSelector[i] = selectorProvider.openSelector();
                 //提交subSelector
@@ -76,11 +74,21 @@ public class MainSubReactor implements Runnable {
 
     class Acceptor implements Runnable {
 
+        ServerSocketChannel serverSocketChannel;
+
+        Selector selector;
+
+        Acceptor(ServerSocketChannel serverSocketChannel, Selector selector) {
+            this.serverSocketChannel = serverSocketChannel;
+            this.selector = selector;
+        }
+
         @Override
         public void run() {
             try {
-                Selector selector = subSelector[count++ / subSelector.length];
+                Selector selector = subSelector[count++ % subSelector.length];
                 SocketChannel socketChannel = serverSocketChannel.accept();
+                socketChannel.configureBlocking(false);
                 socketChannel.register(selector, SelectionKey.OP_READ, new Handler(selector, socketChannel));
             } catch (Exception e) {
                 e.printStackTrace();
