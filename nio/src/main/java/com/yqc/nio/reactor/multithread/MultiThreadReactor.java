@@ -1,15 +1,17 @@
 package com.yqc.nio.reactor.multithread;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -118,26 +120,48 @@ public class MultiThreadReactor implements Runnable {
         }
 
         private synchronized void processAndHandOff() {
-            byte[] b = new byte[readBuffer.arrayOffset()];
-            readBuffer.flip();
-            readBuffer.get(b);
-            System.out.println("输入" + new String(b, 0, b.length));
-            System.out.println("操作!");
-            byte[] bytes = ("HTTP/1.1 200 OK\r\n Server: Apache-Coyote/1.1\r\n Content-Length:512\r\n\r\n" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())).getBytes();
-            writeBuffer.put(bytes);
-            writeBuffer.flip();
-            state = WRITE;
-            selectionKey.interestOps(SelectionKey.OP_WRITE);
-            selector.wakeup();
+            try {
+                //搜索功能在二级域名中
+                URL url = new URL("http://www.baidu.com");
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+                httpURLConnection.setDoOutput(true);
+                httpURLConnection.setDoInput(true);
+                httpURLConnection.setRequestMethod("GET");
+                // httpURLConnection.setRequestProperty();
+                /**
+                 * 接收数据
+                 */
+                InputStream inputStream = httpURLConnection.getInputStream();
+                byte[] b = new byte[1024];
+                int len;
+                writeBuffer.clear();
+                byte[] bytes = ("HTTP/1.1 200 OK\r\n\r\n ").getBytes();
+                writeBuffer.put(bytes);
+                while ((len = inputStream.read(b)) != -1) {
+                    if (writeBuffer.remaining() < len) {
+                        ByteBuffer newBuffer = ByteBuffer.allocate(writeBuffer.capacity() + len);
+                        writeBuffer.flip();
+                        newBuffer.put(writeBuffer);
+                        writeBuffer = newBuffer;
+                    }
+                    System.out.println("输入:" + new String(b, 0, len, StandardCharsets.UTF_8));
+                    writeBuffer.put(b, 0, len);
+                }
+                writeBuffer.flip();
+                state = WRITE;
+                selectionKey.interestOps(SelectionKey.OP_WRITE);
+                selector.wakeup();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
 
-        private void write() throws IOException {
+        private synchronized void write() throws IOException {
             socketChannel.write(writeBuffer);
             SelectionKey selectionKey = socketChannel.keyFor(selector);
             selectionKey.interestOps(selectionKey.interestOps() & ~SelectionKey.OP_WRITE);
             socketChannel.close();
-          /*  socketChannel.close();
-            selectionKey.cancel();*/
         }
 
         class Processor implements Runnable {
