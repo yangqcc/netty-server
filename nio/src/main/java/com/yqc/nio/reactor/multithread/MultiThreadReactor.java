@@ -55,7 +55,6 @@ public class MultiThreadReactor implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     private void dispatch(SelectionKey selectionKey) {
@@ -64,7 +63,6 @@ public class MultiThreadReactor implements Runnable {
             runnable.run();
         }
     }
-
 
     final class Acceptor implements Runnable {
 
