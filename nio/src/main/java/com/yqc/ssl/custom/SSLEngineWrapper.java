@@ -45,7 +45,7 @@ public class SSLEngineWrapper {
                 doHandShake();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         return result;
     }
@@ -77,6 +77,21 @@ public class SSLEngineWrapper {
                 desBuffer.flip();
                 needData = false;
             } else if (result.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
+                if (buffer.limit() == buffer.capacity()) {
+                    /* buffer not big enough */
+                    ByteBuffer newBuffer = ByteBuffer.allocate(buffer.capacity() * 2);
+                    buffer.flip();
+                    newBuffer.put(buffer);
+                    buffer = newBuffer;
+                } else {
+                    /* Buffer not full, just need to read more
+                     * data off the channel. Reset pointers
+                     * for reading off SocketChannel
+                     */
+                    buffer.position(buffer.limit());
+                    buffer.limit(buffer.capacity());
+                }
+                buffer.capacity();
                 needData = true;
             } else if (result.getStatus() == SSLEngineResult.Status.OK) {
                 break;
