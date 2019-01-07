@@ -24,6 +24,13 @@ public class SSLEngineWrapper {
 
     private final Object wrapLock = new Object();
 
+    private final Object unwrapLock = new Object();
+
+
+    private ByteBuffer unwrapSrc = ByteBuffer.allocate(1024), wrapDst = ByteBuffer.allocate(1024);
+    private int uRemaining = 0;
+
+
     public SSLEngineWrapper(SSLContext sslContext, SocketChannel socketChannel) {
         try {
             this.socketChannel = socketChannel;
@@ -38,7 +45,7 @@ public class SSLEngineWrapper {
     public String read() {
         String result = "";
         try {
-            result = this.readAndUnWrap();
+            result = this.recvAndUnwrap(wrapDst);
             SSLEngineResult.HandshakeStatus handshakeStatus = sslEngine.getHandshakeStatus();
             if (handshakeStatus != SSLEngineResult.HandshakeStatus.FINISHED &&
                     handshakeStatus != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING) {
@@ -50,54 +57,62 @@ public class SSLEngineWrapper {
         return result;
     }
 
-    private String readAndUnWrap() throws IOException {
-        ByteBuffer buffer = ByteBuffer.allocate(1024);
-        ByteBuffer desBuffer = ByteBuffer.allocate(buffer.capacity());
-        boolean needData = true;
-        while (true) {
-            if (needData) {
-                int len = socketChannel.read(buffer);
-                if (len == -1) {
-                    throw new RuntimeException("远程主机关闭了连接!");
-                }
-                while (len != 0) {
-                    ByteBuffer newBuffer = ByteBuffer.allocate(buffer.capacity() * 2);
-                    buffer.flip();
-                    newBuffer.put(buffer);
-                    buffer = newBuffer;
-                    len = socketChannel.read(newBuffer);
-                }
-                buffer.flip();
-            }
-            SSLEngineResult result = sslEngine.unwrap(buffer, desBuffer);
-            if (result.getStatus() == SSLEngineResult.Status.BUFFER_OVERFLOW) {
-                ByteBuffer newBuffer = ByteBuffer.allocate(desBuffer.capacity() * 2);
-                newBuffer.put(desBuffer);
-                desBuffer = newBuffer;
-                desBuffer.flip();
-                needData = false;
-            } else if (result.getStatus() == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
-                if (buffer.limit() == buffer.capacity()) {
-                    /* buffer not big enough */
-                    ByteBuffer newBuffer = ByteBuffer.allocate(buffer.capacity() * 2);
-                    buffer.flip();
-                    newBuffer.put(buffer);
-                    buffer = newBuffer;
-                } else {
-                    /* Buffer not full, just need to read more
-                     * data off the channel. Reset pointers
-                     * for reading off SocketChannel
-                     */
-                    buffer.position(buffer.limit());
-                    buffer.limit(buffer.capacity());
-                }
-                buffer.capacity();
-                needData = true;
-            } else if (result.getStatus() == SSLEngineResult.Status.OK) {
-                break;
-            }
+    private String recvAndUnwrap(ByteBuffer dst) throws IOException {
+        SSLEngineResult.Status status = SSLEngineResult.Status.OK;
+        // SSLStreams.WrapperResult wrapperResult = new SSLStreams.WrapperResult();
+        boolean needData;
+        if (uRemaining > 0) {
+            unwrapSrc.compact();
+            unwrapSrc.flip();
+            needData = false;
+        } else {
+            unwrapSrc.clear();
+            needData = true;
         }
-        return new String(desBuffer.array());
+        synchronized (unwrapLock) {
+            int x;
+            do {
+                if (needData) {
+                    do {
+                        x = socketChannel.read(unwrapSrc);
+                    } while (x == 0);
+                    //返回-1说明连接关闭了
+                    if (x == -1) {
+                        throw new IOException("connection closed for reading");
+                    }
+                    unwrapSrc.flip();
+                }
+                SSLEngineResult sslEngineResult = sslEngine.unwrap(unwrapSrc, dst);
+                status = sslEngineResult.getStatus();
+                if (status == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
+                    if (unwrapSrc.limit() == unwrapSrc.capacity()) {
+                        ByteBuffer b = ByteBuffer.allocate(unwrapSrc.capacity() * 2);
+                        b.put(unwrapSrc);
+                        unwrapSrc = b;
+                        unwrapSrc.flip();
+                    } else {
+                        /* Buffer not full, just need to read more
+                         * data off the channel. Reset pointers
+                         * for reading off SocketChannel
+                         */
+                        unwrapSrc.position(unwrapSrc.limit());
+                        unwrapSrc.limit(unwrapSrc.capacity());
+                    }
+                    needData = true;
+                } else if (status == SSLEngineResult.Status.BUFFER_OVERFLOW) {
+                    ByteBuffer d = ByteBuffer.allocate(dst.capacity() * 2);
+                    dst.flip();
+                    d.put(dst);
+                    dst = d;
+                    needData = false;
+                } else if (status == SSLEngineResult.Status.CLOSED) {
+                    return "";
+                }
+            } while (status != SSLEngineResult.Status.OK);
+        }
+        uRemaining = unwrapSrc.remaining();
+        dst.flip();
+        return new String(dst.array());
     }
 
     private void writeAndWrap(ByteBuffer writeBuffer) throws IOException {
@@ -158,7 +173,8 @@ public class SSLEngineWrapper {
                         writeAndWrap(ByteBuffer.allocate(1024));
                         break;
                     case NEED_UNWRAP:
-                        readAndUnWrap();
+                        wrapDst.clear();
+                        this.recvAndUnwrap(wrapDst);
                         break;
                     default:
                         throw new NullPointerException("握手不支持'" + handshakeStatus + "'操作!");

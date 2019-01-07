@@ -1,7 +1,5 @@
 package com.yqc.ssl.custom;
 
-import com.yqc.ssl.sslengine.SSLStreams;
-
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -56,20 +54,20 @@ public class HttpsServer {
                     SSLContext sslContext = SSLContext.getInstance("SSL");
                     sslContext.init(keyManagers, null, new SecureRandom());
                     socketChannel.configureBlocking(false);
-                    SSLStreams sslStreams = new SSLStreams(sslContext, socketChannel);
+                    SSLEngineWrapper sslStreams = new SSLEngineWrapper(sslContext, socketChannel);
                     socketChannel.register(selector, SelectionKey.OP_READ, sslStreams);
                 } else if (selectionKey.isReadable()) {
-                    SSLStreams sslStreams = (SSLStreams) selectionKey.attachment();
-                    SSLStreams.WrapperResult wrapperResult = sslStreams.recvData(ByteBuffer.allocate(1024));
-                    System.out.println("receive messages:" + new String(wrapperResult.getBuf().array()));
+                    SSLEngineWrapper sslStreams = (SSLEngineWrapper) selectionKey.attachment();
+                    String readStr = sslStreams.read();
+                    System.out.println("receive messages:" + readStr);
                     selectionKey.interestOps(selectionKey.interestOps() | SelectionKey.OP_WRITE);
                 } else if (selectionKey.isWritable()) {
-                    SSLStreams sslStreams = (SSLStreams) selectionKey.attachment();
+                    SSLEngineWrapper sslStreams = (SSLEngineWrapper) selectionKey.attachment();
                     String responseText = this.getResponseText();
                     ByteBuffer destBuffer = ByteBuffer.allocate(responseText.getBytes().length);
                     destBuffer.put(responseText.getBytes());
                     destBuffer.flip();
-                    sslStreams.sendData(destBuffer);
+                    sslStreams.write(responseText);
                     selectionKey.interestOps(selectionKey.interestOps() & ~SelectionKey.OP_WRITE);
                     selectionKey.channel().close();
                 }
