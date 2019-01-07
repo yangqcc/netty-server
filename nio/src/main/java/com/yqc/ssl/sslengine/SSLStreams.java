@@ -39,8 +39,10 @@ import java.util.concurrent.locks.ReentrantLock;
  * given a non-blocking SocketChannel, it produces
  * (blocking) streams which encrypt/decrypt the SSL content
  * and handle the SSL handshaking automatically.
+ *
+ * @author yangqc
  */
-class SSLStreams {
+public class SSLStreams {
 
     private SSLContext sslctx;
     private SocketChannel socketChannel;
@@ -54,7 +56,7 @@ class SSLStreams {
      */
     private Lock handshaking = new ReentrantLock();
 
-    SSLStreams(SSLContext sslCtx, SocketChannel socketChannel) {
+    public SSLStreams(SSLContext sslCtx, SocketChannel socketChannel) {
         this.sslctx = sslCtx;
         this.socketChannel = socketChannel;
         InetSocketAddress addr = (InetSocketAddress) socketChannel.socket().getRemoteSocketAddress();
@@ -104,7 +106,7 @@ class SSLStreams {
         engine.beginHandshake();
     }
 
-    class WrapperResult {
+    public class WrapperResult {
         SSLEngineResult result;
 
         /**
@@ -112,6 +114,22 @@ class SSLStreams {
          * a reallocated buffer is returned here
          */
         ByteBuffer buf;
+
+        public SSLEngineResult getResult() {
+            return result;
+        }
+
+        public void setResult(SSLEngineResult result) {
+            this.result = result;
+        }
+
+        public ByteBuffer getBuf() {
+            return buf;
+        }
+
+        public void setBuf(ByteBuffer buf) {
+            this.buf = buf;
+        }
     }
 
     private int appBufSize;

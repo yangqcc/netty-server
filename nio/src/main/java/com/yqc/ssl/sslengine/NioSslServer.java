@@ -78,9 +78,7 @@ public class NioSslServer extends NioSslPeer {
      * @throws Exception
      */
     public void start() throws Exception {
-
         log.debug("Initialized and waiting for new connections...");
-
         while (isActive()) {
             selector.select();
             Iterator<SelectionKey> selectedKeys = selector.selectedKeys().iterator();
@@ -194,8 +192,8 @@ public class NioSslServer extends NioSslPeer {
     /**
      * Will send a message back to a client.
      *
-     * @param socketChannel     - the key dedicated to the socket channel that will be used to write to the client.
-     * @param message - the message to be sent.
+     * @param socketChannel - the key dedicated to the socket channel that will be used to write to the client.
+     * @param message       - the message to be sent.
      * @throws IOException if an I/O error occurs to the socket channel.
      */
     @Override
