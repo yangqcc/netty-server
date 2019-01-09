@@ -20,6 +20,9 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 
+/**
+ * @author yangqc
+ */
 public class HexDumpProxyBackendHandler extends ChannelInboundHandlerAdapter {
 
     private final Channel inboundChannel;

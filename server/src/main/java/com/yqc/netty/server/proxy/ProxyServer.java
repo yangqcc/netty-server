@@ -17,7 +17,6 @@ public class ProxyServer {
 
     public static void main(String[] args) {
         //设置serverHandler
-        HexDumpProxyInitializer hexDumpProxyInitializer = new HexDumpProxyInitializer("www.baidu.com", 443);
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
@@ -25,11 +24,11 @@ public class ProxyServer {
             serverBootstrap
                     .group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
-                    .localAddress(new InetSocketAddress("localhost", 80))
+                    .localAddress(new InetSocketAddress(80))
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel ch) {
-                            ch.pipeline().addLast(hexDumpProxyInitializer);
+                            ch.pipeline().addLast(new HttpHelloWorldServerHandler());
                         }
                     });
             ChannelFuture channelFuture = serverBootstrap.bind();
