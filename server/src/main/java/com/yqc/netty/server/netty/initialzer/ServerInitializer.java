@@ -13,9 +13,9 @@
  * License for the specific language governing permissions and limitations
  * under the License.
  */
-package com.yqc.netty.server.initialzer;
+package com.yqc.netty.server.netty.initialzer;
 
-import com.yqc.netty.server.handler.ServerHandler;
+import com.yqc.netty.server.netty.handler.ServerHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
