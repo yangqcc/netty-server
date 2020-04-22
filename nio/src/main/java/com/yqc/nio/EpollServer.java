@@ -26,6 +26,7 @@ public class EpollServer {
             ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
             serverSocketChannel.socket().bind(new InetSocketAddress("127.0.0.1", 8000));
             Selector selector = Selector.open();
+            serverSocketChannel.configureBlocking(false);
             serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
 
             ByteBuffer readBuffer = ByteBuffer.allocate(1024);

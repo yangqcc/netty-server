@@ -10,10 +10,7 @@ import com.yqc.netty.server.netty.handler.CustomServer;
  */
 public class CustomBootstrap {
 
-    private final int port;
-
     public CustomBootstrap(int port) {
-        this.port = port;
     }
 
 
